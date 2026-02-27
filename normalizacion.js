@@ -1,61 +1,47 @@
-const mockData = [
-  {
-    index: "adult-black-dragon",
-    name: "Adult Black Dragon",
-    size: "Huge",
-    type: "dragon",
-    alignment: "chaotic evil",
-    challenge_rating: 14, 
-    armor_class: [{ type: "natural", value: 19 }], 
-    hit_points: 195,
-    speed: { walk: "40 ft.", fly: "80 ft.", swim: "40 ft." },
-    strength: 23,
-    dexterity: 14,
-    constitution: 21,
-    intelligence: 14,
-    wisdom: 13,
-    charisma: 17,
-    damage_immunities: ["acid"],
-    damage_resistances: [],
-    damage_vulnerabilities: [],
-    legendary_actions: [{}, {}, {}] 
-  }
-];
+const { getMonsterList, getMonsterDetails } = require("./get_json");
 
-const normalizedData = mockData.map((monster => {
-    let finalac=0; // armor_class (ojo: a veces es array)
-        if (Array.isArray(monster.armor_class)){
-            ac=monster.armor_class[0].value;
-        }else{
-            ac=monster.armor_class;
-        }
-    
-    const speed = Object.values(monster.speed).map(s => parseInt(s))
-    const fspeed = Math.max(...speed);
+(async () => {
+    try {
+        const monsterList = await getMonsterList(10); 
+        const monsterDetails = await getMonsterDetails(monsterList);
+        const normalizedData = monsterDetails.map(monster => {            
+            let finalAc = 0;
+            if (Array.isArray(monster.armor_class)) {
+                finalAc = monster.armor_class[0].value;
+            } else {
+                finalAc = monster.armor_class;
+            }
+            const speedValues = monster.speed ? Object.values(monster.speed).map(s => parseInt(s)) : [0];
+            const finalSpeed = Math.max(...speedValues);
 
-    return{
-        index: monster.index,
-        name: monster.name,
-        size: monster.size,
-        type: monster.type,
-        alignment: monster.alignment,
-        cr: monster.challenge_rating,
-        ac: finalac,
-        hp: monster.hit_points,
-        speed: fspeed,
-        stats: {
-        str: monster.strength,
-        dex: monster.dexterity,
-        con: monster.constitution,
-        int: monster.intelligence,
-        wis: monster.wisdom,
-        cha: monster.charisma
-        },
-        immuneCount: monster.damage_immunities.length,
-        resistCount: monster.damage_resistances.length,
-        vulnCount: monster.damage_vulnerabilities.length,
-        hasLegendary: monster.legendary_actions.length
+            return {
+                index: monster.index,
+                name: monster.name,
+                size: monster.size,
+                type: monster.type,
+                alignment: monster.alignment,                
+                cr: monster.challenge_rating, 
+                ac: finalAc,
+                hp: monster.hit_points,
+                speed: finalSpeed,
+                stats: {
+                    str: monster.strength,
+                    dex: monster.dexterity,
+                    con: monster.constitution,
+                    int: monster.intelligence,
+                    wis: monster.wisdom,
+                    cha: monster.charisma
+                },                
+                immuneCount: monster.damage_immunities?.length || 0,
+                resistCount: monster.damage_resistances?.length || 0,
+                vulnCount: monster.damage_vulnerabilities?.length || 0,                
+                hasLegendary: (monster.legendary_actions?.length || 0) > 0
+            };
+        });
 
-    }}));
+        console.log(normalizedData);
 
-    console.log(normalizedData);
+    } catch (error) {
+        console.error("Error ejecutando el script:", error);
+    }
+})();
