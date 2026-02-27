@@ -18,10 +18,11 @@ const getMonsterDetails = async (monsterList) => {
 
 (async () => {
   try {
-    const monsterList = await getMonsterList(5);
+    const monsterList = await getMonsterList(20);
     const monsterDetails = await getMonsterDetails(monsterList);
-    console.log(monsterDetails);
+    
   } catch (error) {
     console.error("Error:", error.message || error);
   }
 })();
+module.exports = { getMonsterList, getMonsterDetails };
